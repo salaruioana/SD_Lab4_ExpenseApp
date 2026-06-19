@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - Family Wallet</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+</head>
+<body class="container" style="padding-top: 50px;">
+<article style="max-width: 500px; margin: auto;">
+    <header><h2>Creeaza Cont Nou</h2></header>
+    <form id="registerForm">
+        <input type="text" id="reg_username" placeholder="Username" required>
+        <input type="password" id="reg_parola" placeholder="Parola" required>
+        <div class="grid">
+            <input type="text" id="reg_nume" placeholder="Nume" required>
+            <input type="text" id="reg_prenume" placeholder="Prenume" required>
+        </div>
+        <input type="number" id="reg_sold" placeholder="Sold Initial (RON)" required>
+        <button type="submit">Inregistrare</button>
+    </form>
+    <footer>Ai deja cont? <a href="/login.html">Logheaza-te</a></footer>
+</article>
+
+<script>
+        document.getElementById('registerForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const url = `/api/auth/register?username=${document.getElementById('reg_username').value}&parola=${document.getElementById('reg_parola').value}&nume=${document.getElementById('reg_nume').value}&prenume=${document.getElementById('reg_prenume').value}&soldInitial=${document.getElementById('reg_sold').value}`;
+
+            const response = await fetch(url, { method: 'POST' });
+            if (response.ok) {
+                alert("Cont creat cu succes!");
+                window.location.href = "/login.html";
+            } else {
+                alert("Eroare la inregistrare.");
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - Family Wallet</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+</head>
+<body class="container">
+<nav>
+    <ul><li><strong>Family Wallet</strong></li></ul>
+    <ul>
+        <li>Salut, <span id="displayUser" style="color: var(--primary);"></span></li>
+        <li><a href="/login.html" class="outline">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="grid">
+    <article>
+        <header>Sold Curent</header>
+        <h2 id="balance">0.00 RON</h2>
+    </article>
+
+    <article>
+        <header>Adauga Cheltuiala</header>
+        <form id="expenseForm">
+            <input type="text" id="desc" placeholder="Descriere" required>
+            <input type="number" id="suma" placeholder="Suma" required>
+            <select id="cat">
+                <option value="MANCARE">Mancare</option>
+                <option value="INTRETINERE">Intretinere</option>
+                <option value="DISTRACTIE">Distractie</option>
+                <option value="SCOALA">Scoala</option>
+                <option value="PERSONALE">Personale</option>
+            </select>
+            <button type="submit">Adauga</button>
+        </form>
+    </article>
+</div>
+
+<h3>Istoric Cheltuieli</h3>
+<table role="grid">
+    <thead>
+    <tr><th>Descriere</th><th>Categorie</th><th>Suma</th></tr>
+    </thead>
+    <tbody id="expenseTable"></tbody>
+</table>
+
+<script>
+        const params = new URLSearchParams(window.location.search);
+        const username = params.get('user');
+        document.getElementById('displayUser').innerText = username;
+
+        async function loadData() {
+            try {
+                // 1. Încercăm să luăm soldul
+                const resBalance = await fetch(`/api/auth/balance/${username}`);
+
+                // Dacă serverul dă eroare (500) sau userul nu e găsit
+                if (!resBalance.ok) {
+                    alert("Eroare: Utilizatorul nu a fost gasit sau sesiunea a expirat!");
+                    window.location.href = "/login.html";
+                    return;
+                }
+
+                const balanceValue = await resBalance.json();
+                document.getElementById('balance').innerText = parseFloat(balanceValue).toFixed(2) + " RON";
+
+                // 2. Luăm istoricul (doar dacă userul e valid)
+                const resExp = await fetch(`/api/expenses/history/${username}`);
+                const expenses = await resExp.json();
+                const table = document.getElementById('expenseTable');
+                table.innerHTML = expenses.map(e =>
+                    `<tr><td>${e.descriere}</td><td><mark>${e.categorie}</mark></td><td>${e.suma} RON</td></tr>`
+                ).join('');
+
+            } catch (err) {
+                console.error("Eroare la incarcare:", err);
+                window.location.href = "/login.html";
+            }
+        }
+
+        document.getElementById('expenseForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const desc = document.getElementById('desc').value;
+            const suma = document.getElementById('suma').value;
+            const cat = document.getElementById('cat').value;
+
+            const res = await fetch(`/api/expenses/add?username=${username}&descriere=${desc}&suma=${suma}&categorie=${cat}`, {
+                method: 'POST'
+            });
+
+            if (res.ok) {
+                location.reload(); // Refresh simplu să vedem datele noi
+            } else {
+                const err = await res.json();
+                alert("Eroare: " + (err.eroare || "Fonduri insuficiente"));
+            }
+        };
+
+        loadData();
+    </script>
+</body>
+</html>

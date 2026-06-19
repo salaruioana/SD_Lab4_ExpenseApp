@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Family Wallet</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+</head>
+<body class="container" style="padding-top: 100px;">
+<article style="max-width: 400px; margin: auto;">
+    <h2>Autentificare</h2>
+    <input type="text" id="user" placeholder="Username">
+    <input type="password" id="pass" placeholder="Parola">
+    <button onclick="login()">Intra in cont</button>
+    <p>Nu ai cont? <a href="/register.html">Inscrie-te aici</a></p>
+</article>
+
+<script>
+        async function login() {
+            const user = document.getElementById('user').value;
+            const pass = document.getElementById('pass').value;
+
+            // Trimitem cererea de login către server
+            const response = await fetch(`/api/auth/login?username=${user}&parola=${pass}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                // Dacă e OK, mergem la dashboard
+                window.location.href = `/dashboard.html?user=${user}`;
+            } else {
+                // Dacă serverul a zis "Unauthorized", afișăm eroarea
+                alert("Username sau parola incorecta!");
+            }
+        }
+    </script>
+</body>
+</html>
